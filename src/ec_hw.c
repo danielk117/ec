@@ -28,6 +28,7 @@ const char *usage =
     " -f filter_length  AEC filter length (2048)\n"
     " -l loopback       loopback channel\n"
     " -m mic_channels   microphone channel list\n"
+    " -O                output to STDOUT instead of /tmp/ec.output\n"
     " -s                save audio to /tmp/recording.raw and /tmp/out.raw\n"
     " -D                daemonize\n"
     " -h                display this help text\n"
@@ -100,6 +101,7 @@ int main(int argc, char *argv[])
 
     int opt = 0;
     // int delay = 0;
+    int to_stdout = 0;
     int save_audio = 0;
     int daemon = 0;
     char *mic_list_str = NULL;
@@ -154,6 +156,9 @@ int main(int argc, char *argv[])
         case 'm':
             // microphone channel list
             mic_list_str = optarg;
+            break;
+        case 'O':
+            to_stdout = 1;
             break;
         // case 'o':
         //     config.out_pcm = optarg;
@@ -249,7 +254,10 @@ int main(int argc, char *argv[])
     capture_start(&config);
     fifo_setup(&config);
 
-    printf("Running... Press Ctrl+C to exit\n");
+    if (!to_stdout)
+    {
+        printf("Running... Press Ctrl+C to exit\n");
+    }
 
     int timeout = 200 * 1000 * frame_size / config.rate;    // ms
 
@@ -275,7 +283,15 @@ int main(int argc, char *argv[])
             fwrite(out, 2, frame_size * config.out_channels, fp_out);
         }
 
-        fifo_write(out, frame_size);
+        if (to_stdout)
+        {
+            fwrite(out, 2, frame_size * config.rec_channels, stdout);
+            fflush(stdout);
+        }
+        else
+        {
+            fifo_write(out, frame_size);
+        }    
     }
 
     if (fp_rec)
