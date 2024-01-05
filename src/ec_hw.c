@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
         .bypass = 0
     };
 
-    while ((opt = getopt(argc, argv, "b:c:d:Df:hi:l:m:o:r:s")) != -1)
+    while ((opt = getopt(argc, argv, "b:c:d:Df:hi:l:m:o:O:r:s")) != -1)
     {
         switch (opt)
         {
